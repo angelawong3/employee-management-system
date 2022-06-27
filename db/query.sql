@@ -1,10 +1,11 @@
--- SELECT *
--- FROM roles
--- JOIN departments ON roles.department_id = departments.id;
+-- view all departments
+SELECT departments.id AS id, 
+departments.department_name AS department FROM departments
 
--- SELECT *
--- FROM employees
--- JOIN roles ON employees.role_id = roles.id;
+-- view all roles
+SELECT roles.id, roles.title, roles.salary, departments.department_name AS department
+FROM roles
+INNER JOIN departments ON roles.department_id = departments.id
 
 -- view all employees with title, department, salary and manager
 SELECT employees.id, 
@@ -19,7 +20,3 @@ LEFT JOIN roles ON employees.role_id = roles.id
 LEFT JOIN departments ON roles.department_id = departments.id
 LEFT JOIN employees manager ON employees.manager_id = manager.id
 ORDER BY id
-
--- view all departments
-
--- view all roles
