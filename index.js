@@ -29,9 +29,55 @@ managerMsg = () => {
   console.log("|          EMPLOYEE MANAGER         |".bgGray);
   console.log("|                                   |".bgGray);
   console.log(".-----------------------------------.".bgGray);
-  // promptMainContent();
+  promptMainContent();
 };
 
 // prompt main content
+const promptMainContent = () => {
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "choices",
+        message: "What would you like to do?",
+        choices: [
+          { name: "View All Departments", value: "viewAllDepartments" },
+          { name: "Add Department", value: "addDepartment" },
+          { name: "View All Roles", value: "viewAllRoles" },
+          { name: "Add Role", value: "addRole" },
+          { name: "View All Employees", value: "viewAllEmployees" },
+          { name: "Add Employee", value: "addEmployee" },
+          { name: "Update Employee Role", value: "updateEmployeeRole" },
+          { name: "Finish!", value: "quit" },
+        ],
+      },
+    ])
+    .then((answer) => {
+      if (answer.choices === "viewAllDepartments") {
+        viewAllDepartments();
+      }
+      if (answer.choices === "addDepartment") {
+        addDepartment();
+      }
+      if (answer.choices === "viewAllRoles") {
+        viewAllRoles();
+      }
+      if (answer.choices === "addRole") {
+        addRole();
+      }
+      if (answer.choices === "viewAllEmployees") {
+        viewAllEmployees();
+      }
+      if (answer.choices === "addEmployee") {
+        addEmployee();
+      }
+      if (answer.choices === "updateEmployeeRole") {
+        updateEmployeeRole();
+      }
+      if (answer.choices === "quit") {
+        db.end();
+      }
+    });
+};
 
 // functions to view, add, and update db
