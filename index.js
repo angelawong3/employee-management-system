@@ -81,6 +81,15 @@ const promptMainContent = () => {
 };
 
 // functions to view all departments
+viewAllDepartments = () => {
+  const sql = `SELECT departments.id AS id, departments.department_name AS department FROM departments;`;
+
+  db.query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
+    promptMainContent();
+  });
+};
 
 // functions to add department
 
