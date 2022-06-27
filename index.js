@@ -80,4 +80,16 @@ const promptMainContent = () => {
     });
 };
 
-// functions to view, add, and update db
+// functions to view all departments
+
+// functions to add department
+
+// functions to view all roles
+
+// functions to add role
+
+// functions to view all employees
+
+// functions to add employee
+
+// functions to update employee role
