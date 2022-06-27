@@ -1,11 +1,13 @@
+USE company_db;
+
 -- view all departments
 SELECT departments.id AS id, 
-departments.department_name AS department FROM departments
+departments.department_name AS department FROM departments;
 
 -- view all roles
 SELECT roles.id, roles.title, roles.salary, departments.department_name AS department
 FROM roles
-INNER JOIN departments ON roles.department_id = departments.id
+INNER JOIN departments ON roles.department_id = departments.id;
 
 -- view all employees with title, department, salary and manager
 SELECT employees.id, 
@@ -19,4 +21,4 @@ FROM employees
 LEFT JOIN roles ON employees.role_id = roles.id
 LEFT JOIN departments ON roles.department_id = departments.id
 LEFT JOIN employees manager ON employees.manager_id = manager.id
-ORDER BY id
+ORDER BY id;
