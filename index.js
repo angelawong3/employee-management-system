@@ -80,9 +80,11 @@ const promptMainContent = () => {
     });
 };
 
-// functions to view all departments
+// function to view all departments
 viewAllDepartments = () => {
-  const sql = `SELECT departments.id AS id, departments.department_name AS department FROM departments;`;
+  const sql = `SELECT departments.id AS id, 
+  departments.department_name AS department 
+  FROM departments;`;
 
   db.query(sql, (err, rows) => {
     if (err) throw err;
@@ -91,14 +93,47 @@ viewAllDepartments = () => {
   });
 };
 
-// functions to add department
+// function to add department
 
-// functions to view all roles
+// function to view all roles
+viewAllRoles = () => {
+  const sql = `
+  SELECT roles.id, roles.title, roles.salary, departments.department_name AS department 
+  FROM roles 
+  INNER JOIN departments ON roles.department_id = departments.id;`;
 
-// functions to add role
+  db.query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
+    promptMainContent();
+  });
+};
 
-// functions to view all employees
+// function to add role
 
-// functions to add employee
+// function to view all employees
+viewAllEmployees = () => {
+  const sql = `
+SELECT employees.id, 
+employees.first_name, 
+employees.last_name, 
+roles.title, 
+departments.department_name AS department,
+roles.salary, 
+CONCAT (manager.first_name, " ", manager.last_name) AS manager
+FROM employees
+LEFT JOIN roles ON employees.role_id = roles.id
+LEFT JOIN departments ON roles.department_id = departments.id
+LEFT JOIN employees manager ON employees.manager_id = manager.id
+ORDER BY id;`;
 
-// functions to update employee role
+  db.query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
+    promptMainContent();
+  });
+};
+
+// function to add employee
+
+// function to update employee role
