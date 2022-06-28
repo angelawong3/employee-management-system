@@ -3,6 +3,7 @@ const inquirer = require("inquirer");
 const mysql = require("mysql2");
 const consoleTable = require("console.table");
 const colors = require("colors");
+const figlet = require("figlet");
 
 // connect with database
 const db = mysql.createConnection(
@@ -13,7 +14,7 @@ const db = mysql.createConnection(
     password: "",
     database: "company_db",
   },
-  console.log(`Connected to the company_db database.`.bgGray)
+  console.log(`Connected to the company_db database.`.green)
 );
 
 // prompt manager message
@@ -24,11 +25,9 @@ db.connect(function (err) {
 
 // manager message
 managerMsg = () => {
-  console.log(".-----------------------------------.".bgGray);
-  console.log("|                                   |".bgGray);
-  console.log("|          EMPLOYEE MANAGER         |".bgGray);
-  console.log("|                                   |".bgGray);
-  console.log(".-----------------------------------.".bgGray);
+  console.log(figlet.textSync("Employee").green);
+  console.log(figlet.textSync("Manager").green);
+
   promptMainContent();
 };
 
