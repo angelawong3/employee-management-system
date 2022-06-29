@@ -28,11 +28,11 @@ managerMsg = () => {
   console.log(figlet.textSync("Employee").green);
   console.log(figlet.textSync("Manager").green);
 
-  promptMainContent();
+  mainContent();
 };
 
 // prompt main content
-const promptMainContent = () => {
+const mainContent = () => {
   inquirer
     .prompt([
       {
@@ -88,11 +88,37 @@ viewAllDepartments = () => {
   db.query(sql, (err, rows) => {
     if (err) throw err;
     console.table(rows);
-    promptMainContent();
+    mainContent();
   });
 };
 
 // function to add department
+addDepartment = () => {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "department",
+        message: "What is the name of the department?",
+        validate: async (answer) => {
+          if (!answer) {
+            return "Please enter the name of the department.";
+          }
+          return true;
+        },
+      },
+    ])
+    .then(function (answer) {
+      db.query(
+        `INSERT INTO departments (department_name) 
+         VALUES ("${answer.department}")`,
+        (err, rows) => {
+          if (err) throw err;
+          mainContent();
+        }
+      );
+    });
+};
 
 // function to view all roles
 viewAllRoles = () => {
@@ -104,11 +130,65 @@ viewAllRoles = () => {
   db.query(sql, (err, rows) => {
     if (err) throw err;
     console.table(rows);
-    promptMainContent();
+    mainContent();
   });
 };
 
 // function to add role
+addRole = () => {
+  db.query(`SELECT * FROM departments;`, (err, res) => {
+    if (err) throw err;
+    let departments = res.map((departments) => ({
+      name: departments.department_name,
+      value: departments.id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "role",
+          message: "What is the name of the role?",
+          validate: async (answer) => {
+            if (!answer) {
+              return "Please enter the name of the role.";
+            }
+            return true;
+          },
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is the salary of the role?",
+          validate: async (answer) => {
+            if (!answer || isNaN(answer)) {
+              return "Please enter the amount of salary.";
+            }
+            return true;
+          },
+        },
+        {
+          type: "list",
+          name: "department",
+          message: "Which department does the role belong to?",
+          choices: departments,
+        },
+      ])
+      .then((answer) => {
+        db.query(
+          `INSERT INTO roles SET ?`,
+          {
+            title: answer.role,
+            salary: answer.salary,
+            department_id: answer.department,
+          },
+          (err, res) => {
+            if (err) throw err;
+            mainContent();
+          }
+        );
+      });
+  });
+};
 
 // function to view all employees
 viewAllEmployees = () => {
@@ -129,10 +209,19 @@ ORDER BY id;`;
   db.query(sql, (err, rows) => {
     if (err) throw err;
     console.table(rows);
-    promptMainContent();
+    mainContent();
   });
 };
 
 // function to add employee
+addEmployee = () => {};
 
 // function to update employee role
+updateEmployeeRole = () => {};
+
+// BONUS TODO:
+// Update employee managers.
+// View employees by manager.
+// View employees by department.
+// Delete departments, roles, and employees.
+// View the total utilized budget of a department, the combined salaries of all employees in that department.
