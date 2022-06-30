@@ -114,6 +114,7 @@ addDepartment = () => {
          VALUES ("${answer.department}")`,
         (err, rows) => {
           if (err) throw err;
+          console.log(`Added ${answer.department} to the database.`.bgGrey);
           mainContent();
         }
       );
@@ -175,7 +176,7 @@ addRole = () => {
       ])
       .then((answer) => {
         db.query(
-          `INSERT INTO roles SET ?`,
+          `INSERT INTO roles SET ?;`,
           {
             title: answer.role,
             salary: answer.salary,
@@ -183,6 +184,7 @@ addRole = () => {
           },
           (err, res) => {
             if (err) throw err;
+            console.log(`Added ${answer.role} to the database.`.bgGrey);
             mainContent();
           }
         );
@@ -203,8 +205,7 @@ CONCAT (manager.first_name, " ", manager.last_name) AS manager
 FROM employees
 LEFT JOIN roles ON employees.role_id = roles.id
 LEFT JOIN departments ON roles.department_id = departments.id
-LEFT JOIN employees manager ON employees.manager_id = manager.id
-ORDER BY id;`;
+LEFT JOIN employees manager ON employees.manager_id = manager.id;`;
 
   db.query(sql, (err, rows) => {
     if (err) throw err;
@@ -214,7 +215,75 @@ ORDER BY id;`;
 };
 
 // function to add employee
-addEmployee = () => {};
+addEmployee = () => {
+  db.query(`SELECT * FROM roles;`, (err, res) => {
+    if (err) throw err;
+    let roles = res.map((roles) => ({ name: roles.title, value: roles.id }));
+    db.query(`SELECT * FROM employees;`, (err, res) => {
+      if (err) throw err;
+      let managers = res.map((employees) => ({
+        name: employees.first_name + " " + employees.last_name,
+        value: employees.id,
+      }));
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "firstName",
+            message: "What is the employee's first name?",
+            validate: async (answer) => {
+              if (!answer) {
+                return "Please enter the first name of the employee.";
+              }
+              return true;
+            },
+          },
+          {
+            type: "input",
+            name: "lastName",
+            message: "What is the employee's last name?",
+            validate: async (answer) => {
+              if (!answer) {
+                return "Please enter the last name of the employee.";
+              }
+              return true;
+            },
+          },
+          {
+            type: "list",
+            name: "role",
+            message: "What is the employee's role?",
+            choices: roles,
+          },
+          {
+            type: "list",
+            name: "manager",
+            message: "Who is the employee's manager?",
+            choices: managers,
+          },
+        ])
+        .then((answer) => {
+          db.query(
+            `INSERT INTO employees SET ?;`,
+            {
+              first_name: answer.firstName,
+              last_name: answer.lastName,
+              role_id: answer.role,
+              manager_id: answer.manager,
+            },
+            (err, res) => {
+              if (err) throw err;
+              console.log(
+                `Added ${answer.firstName} ${answer.lastName} to the database.`
+                  .bgGrey
+              );
+              mainContent();
+            }
+          );
+        });
+    });
+  });
+};
 
 // function to update employee role
 updateEmployeeRole = () => {};
