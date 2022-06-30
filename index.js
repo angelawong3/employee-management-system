@@ -48,6 +48,10 @@ const mainContent = () => {
           { name: "Add Employee", value: "addEmployee" },
           { name: "Update Employee Role", value: "updateEmployeeRole" },
           { name: "Update Employee Manager", value: "updateEmployeeManagers" },
+          {
+            name: "View Employees by Manager",
+            value: "viewEmployeesByManager",
+          },
           { name: "Finish!", value: "quit" },
         ],
       },
@@ -76,6 +80,9 @@ const mainContent = () => {
       }
       if (answer.choices === "updateEmployeeManagers") {
         updateEmployeeManagers();
+      }
+      if (answer.choices === "viewEmployeesByManager") {
+        viewEmployeesByManager();
       }
       if (answer.choices === "quit") {
         db.end();
@@ -370,7 +377,7 @@ updateEmployeeManagers = () => {
         ])
         .then((answer) => {
           db.query(
-            `UPDATE employees SET ? WHERE ?`,
+            `UPDATE employees SET ? WHERE ?;`,
             [
               {
                 manager_id: answer.newManager,
@@ -391,6 +398,47 @@ updateEmployeeManagers = () => {
 };
 
 // View employees by manager.
+viewEmployeesByManager = () => {
+  db.query(`SELECT id, first_name, last_name FROM employees;`, (err, res) => {
+    if (err) throw err;
+    let managers = res.map((employees) => ({
+      name: employees.first_name + " " + employees.last_name,
+      value: employees.id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "manager",
+          message: "Select a manager and view employees by the manager.",
+          choices: managers,
+        },
+      ])
+      .then((answer) => {
+        db.query(
+          `SELECT employees.id, 
+          employees.first_name, 
+          employees.last_name, 
+          roles.title, 
+          departments.department_name AS department, 
+          roles.salary, 
+          CONCAT (manager.first_name, " ", manager.last_name) AS manager
+          FROM employees 
+          LEFT JOIN employees manager ON employees.manager_id = manager.id 
+          LEFT JOIN roles ON employees.role_id = roles.id 
+          LEFT JOIN departments ON departments.id = roles.department_id 
+          WHERE employees.manager_id = ${answer.manager};`,
+          (err, res) => {
+            if (err) throw err;
+            console.table(res);
+            mainContent();
+          }
+        );
+      });
+  });
+};
+
 // View employees by department.
+
 // Delete departments, roles, and employees.
 // View the total utilized budget of a department, the combined salaries of all employees in that department.
