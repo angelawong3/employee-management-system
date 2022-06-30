@@ -59,6 +59,10 @@ const mainContent = () => {
           { name: "Delete Department", value: "deleteDepartment" },
           { name: "Delete Role", value: "deleteRole" },
           { name: "Delete Employee", value: "deleteEmployee" },
+          {
+            name: "View Budget in Department",
+            value: "viewBudgetInDepartment",
+          },
           { name: "Finish!", value: "quit" },
         ],
       },
@@ -102,6 +106,9 @@ const mainContent = () => {
       }
       if (answer.choices === "deleteEmployee") {
         deleteEmployee();
+      }
+      if (answer.choices === "viewBudgetInDepartment") {
+        viewBudgetInDepartment();
       }
       if (answer.choices === "quit") {
         db.end();
@@ -154,7 +161,10 @@ addDepartment = () => {
 // function to view all roles
 viewAllRoles = () => {
   const sql = `
-  SELECT roles.id, roles.title, roles.salary, departments.department_name AS department 
+  SELECT roles.id, 
+  roles.title, 
+  roles.salary, 
+  departments.department_name AS department 
   FROM roles 
   INNER JOIN departments ON roles.department_id = departments.id;`;
 
@@ -444,7 +454,7 @@ viewEmployeesByManager = () => {
         .then((answer) => {
           db.query(
             `SELECT CONCAT (manager.first_name, " ", manager.last_name) AS manager,
-          employees.id, 
+          employees.id AS employee_id, 
           employees.first_name, 
           employees.last_name, 
           roles.title, 
@@ -486,7 +496,7 @@ viewEmployeesByDepartment = () => {
       .then((answer) => {
         db.query(
           `SELECT departments.department_name AS department, 
-          employees.id, 
+          employees.id AS employee_id, 
           employees.first_name, 
           employees.last_name, 
           roles.title, 
@@ -612,4 +622,39 @@ deleteEmployee = () => {
   });
 };
 
-// View the total utilized budget of a department, the combined salaries of all employees in that department.
+// view the combined salaries of all employees in a department
+viewBudgetInDepartment = () => {
+  db.query(`SELECT * FROM departments;`, (err, results) => {
+    if (err) throw err;
+    let departments = results.map((departments) => ({
+      name: departments.department_name,
+      value: departments.id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "department",
+          message: "Select the department to view its total utilized budget.",
+          choices: departments,
+        },
+      ])
+      .then((answer) => {
+        db.query(
+          `SELECT department_id, 
+          SUM(roles.salary) AS total_budget 
+          FROM roles WHERE ?;`,
+          [
+            {
+              department_id: answer.department,
+            },
+          ],
+          (err, results) => {
+            if (err) throw err;
+            console.table(results);
+            mainContent();
+          }
+        );
+      });
+  });
+};
