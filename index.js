@@ -47,6 +47,7 @@ const mainContent = () => {
           { name: "View All Employees", value: "viewAllEmployees" },
           { name: "Add Employee", value: "addEmployee" },
           { name: "Update Employee Role", value: "updateEmployeeRole" },
+          { name: "Update Employee Manager", value: "updateEmployeeManagers" },
           { name: "Finish!", value: "quit" },
         ],
       },
@@ -72,6 +73,9 @@ const mainContent = () => {
       }
       if (answer.choices === "updateEmployeeRole") {
         updateEmployeeRole();
+      }
+      if (answer.choices === "updateEmployeeManagers") {
+        updateEmployeeManagers();
       }
       if (answer.choices === "quit") {
         db.end();
@@ -335,7 +339,56 @@ updateEmployeeRole = () => {
 
 // BONUS TODO:
 // Update employee managers.
-updateEmployeeManagers = () => {};
+updateEmployeeManagers = () => {
+  db.query(`SELECT * FROM employees;`, (err, res) => {
+    if (err) throw err;
+    let employees = res.map((employees) => ({
+      name: employees.first_name + " " + employees.last_name,
+      value: employees.id,
+    }));
+    db.query(`SELECT * FROM employees;`, (err, res) => {
+      if (err) throw err;
+      let managers = res.map((employees) => ({
+        name: employees.first_name + " " + employees.last_name,
+        value: employees.id,
+      }));
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "employeeList",
+            message: "Which employee's manager do you want to update?",
+            choices: employees,
+          },
+          {
+            type: "list",
+            name: "newManager",
+            message:
+              "Which manager do you want to assign the selected employee?",
+            choices: managers,
+          },
+        ])
+        .then((answer) => {
+          db.query(
+            `UPDATE employees SET ? WHERE ?`,
+            [
+              {
+                manager_id: answer.newManager,
+              },
+              {
+                id: answer.employeeList,
+              },
+            ],
+            (err, res) => {
+              if (err) throw err;
+              console.log(`Updated employee's manager.`.bgGrey);
+              mainContent();
+            }
+          );
+        });
+    });
+  });
+};
 
 // View employees by manager.
 // View employees by department.
