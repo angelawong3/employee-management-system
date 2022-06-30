@@ -216,15 +216,15 @@ LEFT JOIN employees manager ON employees.manager_id = manager.id;`;
 
 // function to add employee
 addEmployee = () => {
-  db.query(`SELECT * FROM roles;`, (err, res) => {
+  db.query(`SELECT * FROM employees;`, (err, res) => {
     if (err) throw err;
-    let roles = res.map((roles) => ({ name: roles.title, value: roles.id }));
-    db.query(`SELECT * FROM employees;`, (err, res) => {
+    let managers = res.map((employees) => ({
+      name: employees.first_name + " " + employees.last_name,
+      value: employees.id,
+    }));
+    db.query(`SELECT * FROM roles;`, (err, res) => {
       if (err) throw err;
-      let managers = res.map((employees) => ({
-        name: employees.first_name + " " + employees.last_name,
-        value: employees.id,
-      }));
+      let roles = res.map((roles) => ({ name: roles.title, value: roles.id }));
       inquirer
         .prompt([
           {
@@ -286,10 +286,57 @@ addEmployee = () => {
 };
 
 // function to update employee role
-updateEmployeeRole = () => {};
+updateEmployeeRole = () => {
+  db.query(`SELECT * FROM employees;`, (err, res) => {
+    if (err) throw err;
+    let employees = res.map((employees) => ({
+      name: employees.first_name + " " + employees.last_name,
+      value: employees.id,
+    }));
+    db.query(`SELECT * FROM roles;`, (err, res) => {
+      if (err) throw err;
+      let roles = res.map((roles) => ({ name: roles.title, value: roles.id }));
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "employeeList",
+            message: "Which employee's role do you want to update?",
+            choices: employees,
+          },
+          {
+            type: "list",
+            name: "newRole",
+            message: "Which role do you want to assign the selected employee?",
+            choices: roles,
+          },
+        ])
+        .then((answer) => {
+          db.query(
+            `UPDATE employees SET ? WHERE ?`,
+            [
+              {
+                role_id: answer.newRole,
+              },
+              {
+                id: answer.employeeList,
+              },
+            ],
+            (err, res) => {
+              if (err) throw err;
+              console.log(`Updated employee's role.`.bgGrey);
+              mainContent();
+            }
+          );
+        });
+    });
+  });
+};
 
 // BONUS TODO:
 // Update employee managers.
+updateEmployeeManagers = () => {};
+
 // View employees by manager.
 // View employees by department.
 // Delete departments, roles, and employees.
