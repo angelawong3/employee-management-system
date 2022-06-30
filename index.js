@@ -56,6 +56,9 @@ const mainContent = () => {
             name: "View Employees by Department",
             value: "viewEmployeesByDepartment",
           },
+          { name: "Delete Department", value: "deleteDepartment" },
+          { name: "Delete Role", value: "deleteRole" },
+          { name: "Delete Employee", value: "deleteEmployee" },
           { name: "Finish!", value: "quit" },
         ],
       },
@@ -91,6 +94,15 @@ const mainContent = () => {
       if (answer.choices === "viewEmployeesByDepartment") {
         viewEmployeesByDepartment();
       }
+      if (answer.choices === "deleteDepartment") {
+        deleteDepartment();
+      }
+      if (answer.choices === "deleteRole") {
+        deleteRole();
+      }
+      if (answer.choices === "deleteEmployee") {
+        deleteEmployee();
+      }
       if (answer.choices === "quit") {
         db.end();
       }
@@ -103,9 +115,9 @@ viewAllDepartments = () => {
   departments.department_name AS department 
   FROM departments;`;
 
-  db.query(sql, (err, rows) => {
+  db.query(sql, (err, results) => {
     if (err) throw err;
-    console.table(rows);
+    console.table(results);
     mainContent();
   });
 };
@@ -130,7 +142,7 @@ addDepartment = () => {
       db.query(
         `INSERT INTO departments (department_name) 
          VALUES ("${answer.department}")`,
-        (err, rows) => {
+        (err, results) => {
           if (err) throw err;
           console.log(`Added ${answer.department} to the database.`.bgGrey);
           mainContent();
@@ -146,18 +158,18 @@ viewAllRoles = () => {
   FROM roles 
   INNER JOIN departments ON roles.department_id = departments.id;`;
 
-  db.query(sql, (err, rows) => {
+  db.query(sql, (err, results) => {
     if (err) throw err;
-    console.table(rows);
+    console.table(results);
     mainContent();
   });
 };
 
 // function to add role
 addRole = () => {
-  db.query(`SELECT * FROM departments;`, (err, res) => {
+  db.query(`SELECT * FROM departments;`, (err, results) => {
     if (err) throw err;
-    let departments = res.map((departments) => ({
+    let departments = results.map((departments) => ({
       name: departments.department_name,
       value: departments.id,
     }));
@@ -200,7 +212,7 @@ addRole = () => {
             salary: answer.salary,
             department_id: answer.department,
           },
-          (err, res) => {
+          (err, results) => {
             if (err) throw err;
             console.log(`Added ${answer.role} to the database.`.bgGrey);
             mainContent();
@@ -225,24 +237,27 @@ LEFT JOIN roles ON employees.role_id = roles.id
 LEFT JOIN departments ON roles.department_id = departments.id
 LEFT JOIN employees manager ON employees.manager_id = manager.id;`;
 
-  db.query(sql, (err, rows) => {
+  db.query(sql, (err, results) => {
     if (err) throw err;
-    console.table(rows);
+    console.table(results);
     mainContent();
   });
 };
 
 // function to add employee
 addEmployee = () => {
-  db.query(`SELECT * FROM employees;`, (err, res) => {
+  db.query(`SELECT * FROM employees;`, (err, results) => {
     if (err) throw err;
-    let managers = res.map((employees) => ({
+    let managers = results.map((employees) => ({
       name: employees.first_name + " " + employees.last_name,
       value: employees.id,
     }));
-    db.query(`SELECT * FROM roles;`, (err, res) => {
+    db.query(`SELECT * FROM roles;`, (err, results) => {
       if (err) throw err;
-      let roles = res.map((roles) => ({ name: roles.title, value: roles.id }));
+      let roles = results.map((roles) => ({
+        name: roles.title,
+        value: roles.id,
+      }));
       inquirer
         .prompt([
           {
@@ -289,7 +304,7 @@ addEmployee = () => {
               role_id: answer.role,
               manager_id: answer.manager,
             },
-            (err, res) => {
+            (err, results) => {
               if (err) throw err;
               console.log(
                 `Added ${answer.firstName} ${answer.lastName} to the database.`
@@ -305,15 +320,18 @@ addEmployee = () => {
 
 // function to update employee role
 updateEmployeeRole = () => {
-  db.query(`SELECT * FROM employees;`, (err, res) => {
+  db.query(`SELECT * FROM employees;`, (err, results) => {
     if (err) throw err;
-    let employees = res.map((employees) => ({
+    let employees = results.map((employees) => ({
       name: employees.first_name + " " + employees.last_name,
       value: employees.id,
     }));
-    db.query(`SELECT * FROM roles;`, (err, res) => {
+    db.query(`SELECT * FROM roles;`, (err, results) => {
       if (err) throw err;
-      let roles = res.map((roles) => ({ name: roles.title, value: roles.id }));
+      let roles = results.map((roles) => ({
+        name: roles.title,
+        value: roles.id,
+      }));
       inquirer
         .prompt([
           {
@@ -340,7 +358,7 @@ updateEmployeeRole = () => {
                 id: answer.employeeList,
               },
             ],
-            (err, res) => {
+            (err, results) => {
               if (err) throw err;
               console.log(`Updated employee's role.`.bgGrey);
               mainContent();
@@ -351,18 +369,18 @@ updateEmployeeRole = () => {
   });
 };
 
-// BONUS TODO:
-// Update employee managers.
+// extra functions
+// update employee managers
 updateEmployeeManagers = () => {
-  db.query(`SELECT * FROM employees;`, (err, res) => {
+  db.query(`SELECT * FROM employees;`, (err, results) => {
     if (err) throw err;
-    let employees = res.map((employees) => ({
+    let employees = results.map((employees) => ({
       name: employees.first_name + " " + employees.last_name,
       value: employees.id,
     }));
-    db.query(`SELECT * FROM employees;`, (err, res) => {
+    db.query(`SELECT * FROM employees;`, (err, results) => {
       if (err) throw err;
-      let managers = res.map((employees) => ({
+      let managers = results.map((employees) => ({
         name: employees.first_name + " " + employees.last_name,
         value: employees.id,
       }));
@@ -393,7 +411,7 @@ updateEmployeeManagers = () => {
                 id: answer.employeeList,
               },
             ],
-            (err, res) => {
+            (err, results) => {
               if (err) throw err;
               console.log(`Updated employee's manager.`.bgGrey);
               mainContent();
@@ -404,26 +422,28 @@ updateEmployeeManagers = () => {
   });
 };
 
-// View employees by manager.
+// view employees by manager
 viewEmployeesByManager = () => {
-  db.query(`SELECT id, first_name, last_name FROM employees;`, (err, res) => {
-    if (err) throw err;
-    let managers = res.map((employees) => ({
-      name: employees.first_name + " " + employees.last_name,
-      value: employees.id,
-    }));
-    inquirer
-      .prompt([
-        {
-          type: "list",
-          name: "manager",
-          message: "Select a manager and view employees by the manager.",
-          choices: managers,
-        },
-      ])
-      .then((answer) => {
-        db.query(
-          `SELECT CONCAT (manager.first_name, " ", manager.last_name) AS manager,
+  db.query(
+    `SELECT id, first_name, last_name FROM employees;`,
+    (err, results) => {
+      if (err) throw err;
+      let managers = results.map((employees) => ({
+        name: employees.first_name + " " + employees.last_name,
+        value: employees.id,
+      }));
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "manager",
+            message: "Select a manager and view employees by the manager.",
+            choices: managers,
+          },
+        ])
+        .then((answer) => {
+          db.query(
+            `SELECT CONCAT (manager.first_name, " ", manager.last_name) AS manager,
           employees.id, 
           employees.first_name, 
           employees.last_name, 
@@ -435,21 +455,22 @@ viewEmployeesByManager = () => {
           LEFT JOIN roles ON employees.role_id = roles.id 
           LEFT JOIN departments ON departments.id = roles.department_id 
           WHERE employees.manager_id = ${answer.manager};`,
-          (err, res) => {
-            if (err) throw err;
-            console.table(res);
-            mainContent();
-          }
-        );
-      });
-  });
+            (err, results) => {
+              if (err) throw err;
+              console.table(results);
+              mainContent();
+            }
+          );
+        });
+    }
+  );
 };
 
-// View employees by department.
+// view employees by department
 viewEmployeesByDepartment = () => {
-  db.query(`SELECT id, department_name FROM departments;`, (err, res) => {
+  db.query(`SELECT id, department_name FROM departments;`, (err, results) => {
     if (err) throw err;
-    let departments = res.map((departments) => ({
+    let departments = results.map((departments) => ({
       name: departments.department_name,
       value: departments.id,
     }));
@@ -476,9 +497,9 @@ viewEmployeesByDepartment = () => {
           LEFT JOIN roles ON employees.role_id = roles.id 
           LEFT JOIN departments ON departments.id = roles.department_id 
           WHERE departments.id = ${answer.department};`,
-          (err, res) => {
+          (err, results) => {
             if (err) throw err;
-            console.table(res);
+            console.table(results);
             mainContent();
           }
         );
@@ -486,5 +507,109 @@ viewEmployeesByDepartment = () => {
   });
 };
 
-// Delete departments, roles, and employees.
+// delete department
+deleteDepartment = () => {
+  db.query(`SELECT * FROM departments;`, (err, results) => {
+    if (err) throw err;
+    let departments = results.map((departments) => ({
+      name: departments.department_name,
+      value: departments.id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "department",
+          message: "Select the department you would like to delete.",
+          choices: departments,
+        },
+      ])
+      .then((answer) => {
+        db.query(
+          `DELETE FROM departments WHERE ?`,
+          [
+            {
+              id: answer.department,
+            },
+          ],
+          (err, results) => {
+            if (err) throw err;
+            console.log(`Deleted the department from the database.`.bgGrey);
+            mainContent();
+          }
+        );
+      });
+  });
+};
+
+// delete role
+deleteRole = () => {
+  db.query(`SELECT * FROM roles;`, (err, results) => {
+    if (err) throw err;
+    let roles = results.map((roles) => ({
+      name: roles.title,
+      value: roles.id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "role",
+          message: "Select the role you would like to delete.",
+          choices: roles,
+        },
+      ])
+      .then((answer) => {
+        db.query(
+          `DELETE FROM roles WHERE ?`,
+          [
+            {
+              id: answer.role,
+            },
+          ],
+          (err, results) => {
+            if (err) throw err;
+            console.log(`Deleted the role from the database.`.bgGrey);
+            mainContent();
+          }
+        );
+      });
+  });
+};
+
+// delete employee
+deleteEmployee = () => {
+  db.query(`SELECT * FROM employees;`, (err, results) => {
+    if (err) throw err;
+    let employees = results.map((employees) => ({
+      name: employees.first_name + " " + employees.last_name,
+      value: employees.id,
+    }));
+    inquirer
+      .prompt([
+        {
+          type: "list",
+          name: "employee",
+          message: "Select the employee you would like to delete.",
+          choices: employees,
+        },
+      ])
+      .then((answer) => {
+        db.query(
+          `DELETE FROM employees WHERE ?`,
+          [
+            {
+              id: answer.employee,
+            },
+          ],
+          (err, results) => {
+            if (err) throw err;
+            console.log(`Deleted the employee from the database.`.bgGrey);
+            mainContent();
+          }
+        );
+      });
+  });
+};
+
 // View the total utilized budget of a department, the combined salaries of all employees in that department.
